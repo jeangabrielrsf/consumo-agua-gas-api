@@ -1,13 +1,13 @@
-import { IsBase64, IsDate, IsNotEmpty, IsString } from "class-validator";
+import { IsISO8601, IsNotEmpty, IsString } from "class-validator";
 
 export class UploadFormRequestDTO {
-    @IsBase64()
+    @IsString()
     image: string;
 
     @IsString()
     customer_code: string;
 
-    @IsDate()
+    @IsISO8601()
     measure_datetime: Date;
 
     @IsNotEmpty()

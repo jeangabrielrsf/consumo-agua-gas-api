@@ -1,4 +1,8 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common/decorators';
+import { UploadFormRequestDTO } from './utils/uploadForm.dto';
+import {isBase64} from "is-base64"
+import { InvalidImageException } from './exceptions/invalidImage.exception';
+
 
 @Injectable()
 export class AppService {
@@ -6,7 +10,9 @@ export class AppService {
     return 'Hello World!';
   }
 
-  uploadImage() {
-    
+  uploadImageTest(uploadFormDto:UploadFormRequestDTO) {
+    if(!isBase64(uploadFormDto.image, {allowMime:true})){
+      throw new InvalidImageException();
+    }
   }
 }

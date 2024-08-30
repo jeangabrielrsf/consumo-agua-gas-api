@@ -12,6 +12,10 @@ import { DoubleReportException } from './exceptions/doubleReport.exception';
 import { ConfirmBodyDTO } from './dtos/confirmBody.dto';
 import { MeasureNotFoundException } from './exceptions/measureNotFound.exception';
 import { ConfirmationDuplicateException } from './exceptions/confirmationDuplicate.exception';
+import { UserMeasuresNotFoundException } from './exceptions/userMeasuresNotFound.exception';
+import { InvalidMeasureTypeException } from './exceptions/invalidMeasureType.exception';
+import { CustomerMeasuresResponse } from './dtos/customerMeasuresResponse.dto';
+import { MeasureType } from './dtos/uploadForm.dto';
 
 
 @Injectable()
@@ -86,6 +90,32 @@ export class AppService {
     return {
       "success": true
     };
+  }
+
+  async retrieveCustomerMeasures(customer_code: string, measure_type: string | undefined) {
+    const user = await this.usersRepository.findOneBy({id: customer_code});
+    let measures;
+    if (measure_type){
+      if (!Object.values(MeasureType).includes(measure_type as MeasureType))
+      throw new InvalidMeasureTypeException();
+
+      measures = await this.measuresRepository.find({where: {
+        user: user,
+        measure_type: measure_type
+      }});
+    } else {
+      measures = await this.measuresRepository.findBy({user});
+    }
+    
+    if (measures.length === 0) {
+      throw new UserMeasuresNotFoundException();
+    }
+
+    let response = new CustomerMeasuresResponse();
+    response.customer_code = user.id;
+    response.measures = measures;
+
+    return response;
   }
 
 

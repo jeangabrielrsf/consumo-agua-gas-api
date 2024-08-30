@@ -1,6 +1,6 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Patch, Post, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
 import { AppService } from './app.service';
-import { UploadFormRequestDTO } from './dtos/uploadForm.dto';
+import { MeasureType, UploadFormRequestDTO } from './dtos/uploadForm.dto';
 import { ConfirmBodyDTO } from './dtos/confirmBody.dto';
 
 @Controller()
@@ -18,5 +18,14 @@ export class AppController {
   @HttpCode(HttpStatus.OK)
   confirmMeasure(@Body() confirmBody : ConfirmBodyDTO) {
     return this.appService.confirmMeasure(confirmBody);
+  }
+
+  @Get("/:customer_code/list")
+  @HttpCode(HttpStatus.OK)
+  getCustomerMeasures(
+    @Param('customer_code', ParseUUIDPipe) customer_code: string,
+    @Query('measure_type') measure_type: string
+  ) {
+    return this.appService.retrieveCustomerMeasures(customer_code, measure_type);
   }
 }

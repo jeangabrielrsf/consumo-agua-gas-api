@@ -19,11 +19,11 @@ import { createGenAIClient } from './gemini/gemini.configuration';
     }),
     TypeOrmModule.forRoot({
         type: 'postgres',
-        host: 'localhost',
+        host: 'database',
         port: 5432,
-        username: `${process.env.DB_USER}`,
-        password: `${process.env.DB_PASSWORD}`,
-        database: 'consumo_api',
+        username: `postgres`,
+        password: `postgres`,
+        database: 'postgres',
         entities: [User, Measure],
         synchronize: true
       }), 

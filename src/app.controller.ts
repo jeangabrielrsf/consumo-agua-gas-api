@@ -1,10 +1,12 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { AppService } from './app.service';
-import { UploadFormRequestDTO } from './utils/uploadForm.dto';
+import { UploadFormRequestDTO } from './dtos/uploadForm.dto';
 
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
+
+  
 
 
   @Post("/upload")

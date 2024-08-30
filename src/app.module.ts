@@ -7,7 +7,9 @@ import { Measure } from './measures/measures.entity';
 import { DataSource } from 'typeorm';
 import { MeasuresModule } from './measures/measures.module';
 import { UserModule } from './users/users.module';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { GeminiService } from './gemini/gemini.service';
+import { createGenAIClient } from './gemini/gemini.configuration';
 
 
 @Module({
@@ -16,21 +18,27 @@ import { ConfigModule } from '@nestjs/config';
       isGlobal: true
     }),
     TypeOrmModule.forRoot({
-      type: 'postgres',
-      host: 'localhost',
-      port: 5432,
-      username: `${process.env.DB_USER}`,
-      password: `${process.env.DB_PASSWORD}`,
-      database: 'consumo_api',
-      entities: [User, Measure],
-      synchronize: true
-    }), 
+        type: 'postgres',
+        host: 'localhost',
+        port: 5432,
+        username: `${process.env.DB_USER}`,
+        password: `${process.env.DB_PASSWORD}`,
+        database: 'consumo_api',
+        entities: [User, Measure],
+        synchronize: true
+      }), 
     MeasuresModule, 
     UserModule,
 
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService,
+    GeminiService,
+    {
+    provide: 'GENAI_CLIENT',
+    useFactory: createGenAIClient,
+    inject: [ConfigService]
+  }],
 })
 export class AppModule {
   constructor(private dataSource: DataSource) {}

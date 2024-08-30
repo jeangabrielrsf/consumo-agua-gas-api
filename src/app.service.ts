@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common/decorators';
-import { UploadFormRequestDTO } from './utils/uploadForm.dto';
+import { UploadFormRequestDTO } from './dtos/uploadForm.dto';
 import {isBase64} from "is-base64"
 import { InvalidImageException } from './exceptions/invalidImage.exception';
-import { uploadImage } from './gemini/gemini.file.manager';
+import { GeminiService } from './gemini/gemini.service';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Measure } from './measures/measures.entity';
 import { Repository } from 'typeorm';
@@ -16,7 +16,8 @@ export class AppService {
     @InjectRepository(Measure)
     private measuresRepository : Repository<Measure>,
     @InjectRepository(User)
-    private usersRepository : Repository<User>
+    private usersRepository : Repository<User>,
+    private geminiService: GeminiService
   ){}
 
   async uploadImageTest(uploadFormDto:UploadFormRequestDTO) {
@@ -25,22 +26,19 @@ export class AppService {
     }
 
     try {
-      const response = await uploadImage(uploadFormDto.image);
-      console.log(response);
+      const uploadResponse = await this.geminiService.uploadImage(uploadFormDto);
+      const result = await this.geminiService.getImageValue(uploadFormDto);
+
+      this.checkMeasure(uploadFormDto);
+      console.log(result);
     } catch (error) {
       console.log(error);
     }
-
-    this.checkMeasure(uploadFormDto);
-
-    console.log("Tudo certo até aqui, brow")
   }
 
   async checkMeasure(uploadFormDto: UploadFormRequestDTO) {
     const user = await this.usersRepository.findOneBy({id: uploadFormDto.customer_code});
     const measure = await this.measuresRepository.findOneBy({user});
-    if (measure.has_confirmed) {
-      throw new DoubleReportException();
-    }
+    console.log("Medida: " +  measure)
   }
 }

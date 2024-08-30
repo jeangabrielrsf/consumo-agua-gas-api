@@ -41,7 +41,7 @@ export class GeminiService {
     async getImageValue(uploadFormDto: UploadFormRequestDTO) {
 
         const filePart = this.fileToGenerativePart(this.imagePath, "image/jpeg")
-        const prompt = `Quanto está medindo o medidor da imagem?`;
+        const prompt = `Quanto está medindo o medidor de gás/água da imagem? Passe apenas o valor, sem casas decimais, e cortando zeros desnecessários.`;
         const result = await this.genAIClient.model.generateContent([
             prompt,
             filePart

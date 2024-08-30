@@ -1,10 +1,10 @@
-import { IsISO8601, IsNotEmpty, IsString } from "class-validator";
+import { IsISO8601, IsNotEmpty, IsString, IsUUID } from "class-validator";
 
 export class UploadFormRequestDTO {
     @IsString()
     image: string;
 
-    @IsString()
+    @IsUUID()
     customer_code: string;
 
     @IsISO8601()

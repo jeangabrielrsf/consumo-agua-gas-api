@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 
-export class DoubleReportException extends HttpException {
+export class ConfirmationDuplicateException extends HttpException {
     constructor() {
         super({
             error_code: "CONFIRMATION_DUPLICATE",

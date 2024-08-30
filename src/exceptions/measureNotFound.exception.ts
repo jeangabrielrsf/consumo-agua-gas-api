@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus } from "@nestjs/common";
 
-export class DoubleReportException extends HttpException {
+export class MeasureNotFoundException extends HttpException {
     constructor() {
         super({
             error_code: "MEASURE_NOT_FOUND",

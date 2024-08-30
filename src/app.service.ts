@@ -9,6 +9,9 @@ import { Repository } from 'typeorm';
 import { User } from './users/user.entity';
 import { UploadResponseDTO } from './dtos/uploadResponse.dto';
 import { DoubleReportException } from './exceptions/doubleReport.exception';
+import { ConfirmBodyDTO } from './dtos/confirmBody.dto';
+import { MeasureNotFoundException } from './exceptions/measureNotFound.exception';
+import { ConfirmationDuplicateException } from './exceptions/confirmationDuplicate.exception';
 
 
 @Injectable()
@@ -58,6 +61,33 @@ export class AppService {
         throw error;
     }
   }
+
+
+
+  async confirmMeasure(confirmBody : ConfirmBodyDTO) {
+    const measure = await this.measuresRepository.findOneBy({id: confirmBody.measure_uuid});
+    if (!measure) {
+      throw new MeasureNotFoundException();
+    }
+
+    if (measure.has_confirmed) {
+      throw new ConfirmationDuplicateException();
+    }
+
+    measure.has_confirmed = true;
+    measure.measure_value = confirmBody.confirmed_value;
+    
+    try {
+      await this.measuresRepository.save(measure);
+    } catch (error) {
+      console.error("Erro ao confirmar a medição.");
+    }
+
+    return {
+      "success": true
+    };
+  }
+
 
   async checkMeasure(uploadFormDto: UploadFormRequestDTO, user: User) {
     const measures = await this.measuresRepository.findBy({user});

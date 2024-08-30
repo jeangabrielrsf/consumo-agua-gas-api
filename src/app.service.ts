@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common/decorators';
-import { UploadFormRequestDTO } from './dtos/uploadForm.dto';
+import { UploadFormRequestDTO, MeasureType } from './dtos/uploadForm.dto';
 import {isBase64} from "is-base64"
 import { InvalidImageException } from './exceptions/invalidImage.exception';
 import { GeminiService } from './gemini/gemini.service';
@@ -15,7 +15,7 @@ import { ConfirmationDuplicateException } from './exceptions/confirmationDuplica
 import { UserMeasuresNotFoundException } from './exceptions/userMeasuresNotFound.exception';
 import { InvalidMeasureTypeException } from './exceptions/invalidMeasureType.exception';
 import { CustomerMeasuresResponse } from './dtos/customerMeasuresResponse.dto';
-import { MeasureType } from './dtos/uploadForm.dto';
+import { InvalidDataException } from './exceptions/invalidData.exception';
 
 
 @Injectable()
@@ -33,12 +33,16 @@ export class AppService {
       throw new InvalidImageException();
     }
 
+    if (!Object.values(MeasureType).includes(uploadFormDto.measure_type as MeasureType)) {
+      throw new InvalidDataException();
+    }
+
     try {
       const uploadResponse = await this.geminiService.uploadImage(uploadFormDto);
       const result = await this.geminiService.getImageValue(uploadFormDto);
 
       const user = await this.usersRepository.findOneBy({id: uploadFormDto.customer_code});
-      const validMeasure = await this.checkMeasure(uploadFormDto, user);
+      const validMeasure = await this.checkMeasureIsNotDouble(uploadFormDto, user);
       if (!validMeasure) {
         throw new DoubleReportException();
       }
@@ -111,15 +115,23 @@ export class AppService {
       throw new UserMeasuresNotFoundException();
     }
 
-    let response = new CustomerMeasuresResponse();
+    const transformMeasures = measures.map(measure => ({
+      measure_uuid: measure.id,
+      measure_type: measure.measure_type,
+      measure_datetime: measure.measure_datetime,
+      has_confirmed: measure.has_confirmed,
+      image_url: measure.image_url,
+    }))
+
+    const response = new CustomerMeasuresResponse();
     response.customer_code = user.id;
-    response.measures = measures;
+    response.measures = transformMeasures;
 
     return response;
   }
 
 
-  async checkMeasure(uploadFormDto: UploadFormRequestDTO, user: User) {
+  async checkMeasureIsNotDouble(uploadFormDto: UploadFormRequestDTO, user: User) {
     const measures = await this.measuresRepository.findBy({user});
     if (measures.length > 0) {
       for (let measure of measures) {
@@ -128,7 +140,7 @@ export class AppService {
               return false;
             }
       }
-      return true;
     }
+    return true;
   }
 }

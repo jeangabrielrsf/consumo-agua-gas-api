@@ -1,6 +1,6 @@
-import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query, Req } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Patch, Post, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { MeasureType, UploadFormRequestDTO } from './dtos/uploadForm.dto';
+import { UploadFormRequestDTO } from './dtos/uploadForm.dto';
 import { ConfirmBodyDTO } from './dtos/confirmBody.dto';
 
 @Controller()

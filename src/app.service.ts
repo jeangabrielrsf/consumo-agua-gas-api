@@ -7,8 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Measure } from './measures/measures.entity';
 import { Repository } from 'typeorm';
 import { User } from './users/user.entity';
-import { DoubleReportException } from './exceptions/doubleReport.exception';
 import { UploadResponseDTO } from './dtos/uploadResponse.dto';
+import { DoubleReportException } from './exceptions/doubleReport.exception';
 
 
 @Injectable()
@@ -28,11 +28,14 @@ export class AppService {
 
     try {
       const uploadResponse = await this.geminiService.uploadImage(uploadFormDto);
-      console.log(uploadResponse);
       const result = await this.geminiService.getImageValue(uploadFormDto);
-      console.log(result);
 
       const user = await this.usersRepository.findOneBy({id: uploadFormDto.customer_code});
+      const validMeasure = await this.checkMeasure(uploadFormDto, user);
+      if (!validMeasure) {
+        throw new DoubleReportException();
+      }
+
       let newMeasure = new Measure();
       newMeasure.image_url = uploadResponse.file.uri;
       newMeasure.has_confirmed = false;
@@ -40,8 +43,6 @@ export class AppService {
       newMeasure.user = user;
       newMeasure.measure_type = uploadFormDto.measure_type;
       newMeasure.measure_value = parseInt(result);
-
-      console.log(newMeasure);
 
       await this.measuresRepository.save(newMeasure);
 
@@ -53,13 +54,21 @@ export class AppService {
       return response;
   
     } catch (error) {
-      console.log(error);
+        console.error(error);
+        throw error;
     }
   }
 
-  async checkMeasure(uploadFormDto: UploadFormRequestDTO) {
-    const user = await this.usersRepository.findOneBy({id: uploadFormDto.customer_code});
-    const measure = await this.measuresRepository.findOneBy({user});
-    
+  async checkMeasure(uploadFormDto: UploadFormRequestDTO, user: User) {
+    const measures = await this.measuresRepository.findBy({user});
+    if (measures.length > 0) {
+      for (let measure of measures) {
+        if (measure.measure_datetime.getMonth() === new Date(uploadFormDto.measure_datetime).getMonth() &&
+            measure.measure_type === uploadFormDto.measure_type) {
+              return false;
+            }
+      }
+      return true;
+    }
   }
 }

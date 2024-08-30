@@ -5,10 +5,7 @@ import { UploadFormRequestDTO } from './dtos/uploadForm.dto';
 @Controller()
 export class AppController {
   constructor(private readonly appService: AppService) {}
-
   
-
-
   @Post("/upload")
   @HttpCode(200)
   postUploadImage(@Body() uploadFormDto: UploadFormRequestDTO) {

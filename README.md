@@ -11,10 +11,16 @@ Foram utilizadas as seguintes tecnologias:
 
 ## Modo de uso
 
-1. Como o projeto está Dockerizado, rode através do seguinte comando:
+1. Criar um arquivo ".env" na raiz do diretório, contendo a chave da API do Google Gemimi:
 
 ```bash
-docker-compose up
+GEMINI_API_KEY=<sua-chave-do-gemini>
+```
+
+2. Como o projeto está Dockerizado, rode através do seguinte comando:
+
+```bash
+docker compose up
 ```
 
 Obs: É necessário ter o Docker instalado.
